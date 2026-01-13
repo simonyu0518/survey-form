@@ -38,7 +38,21 @@
 
 ### A2. 建立 Respondent（測提交流程必做）
 
-進入 `Respondents` → `Add`，建立一個使用者（這個會代表「填問卷的人」）。
+這個 repo 的 `Respondent` 是繼承 Django 內建 `User` 的模型，所以在 Admin UI 上**不一定會顯示成 “Respondents”**。
+你通常會在 Admin 首頁看到：
+
+- `Survey_app` → **`Users`**（這個其實就是 `Respondent`）
+
+你也可能同時看到另一個：
+
+- `Authentication and Authorization` → `Users`（這個是 Django 內建的 `auth.User`，通常用來管理管理員/登入帳號）
+
+**請點 `Survey_app` 底下的 `Users`** → `Add`，建立一個使用者（這個會代表「填問卷的人」）。
+
+你可以用網址確認自己點對了：
+
+- `Survey_app → Users`：網址會像 `/admin/survey_app/respondent/...`
+- `Auth → Users`：網址會像 `/admin/auth/user/...`
 
 建議欄位（範例）：
 
@@ -50,6 +64,22 @@
 記下：
 
 - `respondent_id = <你的ID>`
+
+#### 如果你在 Admin 首頁完全找不到 `Survey_app → Users`
+
+你可以用 Django shell 直接建立一個 `Respondent`（確保 `submit-response` 用得到）：
+
+```bash
+python manage.py shell
+```
+
+進入互動式 shell 後貼上：
+
+```python
+from survey_app.models import Respondent
+u = Respondent.objects.create_user(username="demo_user", password="demo_pass_123")
+print("respondent_id =", u.id)
+```
 
 ---
 
