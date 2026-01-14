@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}可用問卷 - Survey Form{% endblock %}
+{% block content %}
+<h1>可用問卷</h1>
+{% if surveys %}
+<ul>
+    {% for survey in surveys %}
+    <li>
+        <h2><a href="{% url 'survey_web:survey_form' survey.id %}">{{ survey.name }}</a></h2>
+        <p>{{ survey.description|default:"無描述" }}</p>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>目前沒有可用的問卷</p>
+{% endif %}
+{% endblock %}

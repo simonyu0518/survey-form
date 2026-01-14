@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Survey Form{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/survey.css' %}">
+</head>
+<body>
+    <nav>
+        <a href="{% url 'survey_web:survey_list' %}">首頁</a>
+    </nav>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <script src="{% static 'js/survey.js' %}"></script>
+</body>
+</html>

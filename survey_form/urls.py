@@ -19,4 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("survey_app.urls")),
+    path("", include("survey_app.web_urls")),  # Web UI 掛在根路徑
 ]

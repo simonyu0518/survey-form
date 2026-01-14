@@ -1,7 +1,11 @@
 from django.db import transaction
 from rest_framework import status
+from rest_framework.exceptions import UnsupportedMediaType
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     Survey,
@@ -179,36 +183,55 @@ class SaveResponseView(APIView):
 
     @transaction.atomic
     def post(self, request):
-        data = request.data
-        if data:
-            survey = Survey.objects.get(id=data["survey_id"])
-            respondent = Respondent.objects.get(id=data["respondent_id"])
-            started_at = data.get("started_at")
-            completed_at = data.get("completed_at")
-            user_responses = data["responses"]
-            survey_response, created = SurveyResponse.objects.update_or_create(
-                survey=survey,
-                respondent=respondent,
-            )
-            if started_at and not survey_response.started_at:
-                survey_response.started_at = started_at
-            if completed_at and not survey_response.completed_at:
-                survey_response.completed_at = completed_at
-            survey_response.save()
-            for response in user_responses:
-                question = Question.objects.get(id=response["question_id"])
-                answer = response["answer"]
-                UserResponse.objects.create(
-                    survey_response=survey_response,
-                    question=question,
-                    answer=answer,
+        try:
+            data = request.data
+            logger.info(f"SaveResponseView received data: {data}")
+            if data:
+                survey = Survey.objects.get(id=data["survey_id"])
+                respondent = Respondent.objects.get(id=data["respondent_id"])
+                started_at = data.get("started_at")
+                completed_at = data.get("completed_at")
+                user_responses = data["responses"]
+                logger.info(f"Processing {len(user_responses)} responses for survey {survey.id}")
+                
+                survey_response, created = SurveyResponse.objects.update_or_create(
+                    survey=survey,
+                    respondent=respondent,
                 )
+                if started_at and not survey_response.started_at:
+                    survey_response.started_at = started_at
+                if completed_at and not survey_response.completed_at:
+                    survey_response.completed_at = completed_at
+                survey_response.save()
+                
+                for response in user_responses:
+                    question = Question.objects.get(id=response["question_id"])
+                    answer = response["answer"]
+                    UserResponse.objects.create(
+                        survey_response=survey_response,
+                        question=question,
+                        answer=answer,
+                    )
+                logger.info(f"Successfully saved all responses for survey {survey.id}")
                 return Response(
                     {"msg": "Response successfully submitted"},
                     status=status.HTTP_200_OK,
                 )
-        else:
+            else:
+                logger.warning("SaveResponseView received empty data")
+                return Response(
+                    {"msg": EMPTY_REQUEST_DATA_MSG},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except UnsupportedMediaType as e:
+            logger.warning(f"Unsupported media type in SaveResponseView: {str(e)}", exc_info=True)
             return Response(
-                {"msg": EMPTY_REQUEST_DATA_MSG},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"msg": f'Unsupported media type: {request.content_type}'},
+                status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            )
+        except Exception as e:
+            logger.error(f"Error in SaveResponseView: {str(e)}", exc_info=True)
+            return Response(
+                {"msg": f"Error saving response: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

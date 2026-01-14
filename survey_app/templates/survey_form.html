@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ survey.name }} - Survey Form{% endblock %}
+{% block content %}
+<h1>{{ survey.name }}</h1>
+{% if survey.description %}<p>{{ survey.description }}</p>{% endif %}
+
+<form method="POST" action="{% url 'survey_web:survey_submit' survey.id %}" id="survey-form">
+    {% csrf_token %}
+    
+    {% for question in survey_data.questions_details %}
+    <div class="question" 
+         data-order="{{ question.order }}" 
+         data-question-id="{{ question.id }}"
+         {% if question.conditional_order_json %}data-conditional="{{ question.conditional_order_json }}"{% endif %}>
+        <label>
+            {{ question.text }}
+            {% if question.is_mandatory %}<span class="required">*</span>{% endif %}
+        </label>
+        
+        {% if question.question_type == 'MULTIPLE_CHOICE' %}
+            {% for choice in question.response_choices %}
+            <div class="choice">
+                <input type="radio" 
+                       name="question_{{ question.id }}" 
+                       value="{{ choice }}" 
+                       id="q{{ question.id }}_{{ forloop.counter }}"
+                       {% if question.is_mandatory %}required{% endif %}>
+                <label for="q{{ question.id }}_{{ forloop.counter }}">{{ choice }}</label>
+            </div>
+            {% endfor %}
+        
+        {% elif question.question_type == 'INTEGER' %}
+            <input type="number" 
+                   name="question_{{ question.id }}" 
+                   {% if question.constraints.min %}min="{{ question.constraints.min }}"{% endif %}
+                   {% if question.constraints.max %}max="{{ question.constraints.max }}"{% endif %}
+                   {% if question.is_mandatory %}required{% endif %}>
+            {% if question.constraints.unit %}<span class="unit">{{ question.constraints.unit }}</span>{% endif %}
+        
+        {% elif question.question_type == 'TEXT' %}
+            <textarea name="question_{{ question.id }}" 
+                      rows="4"
+                      {% if question.constraints.max_length %}maxlength="{{ question.constraints.max_length }}"{% endif %}
+                      {% if question.is_mandatory %}required{% endif %}></textarea>
+            {% if question.constraints.hint %}<small class="hint">{{ question.constraints.hint }}</small>{% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+    <button type="submit" id="submit-btn">提交</button>
+    <div id="loading-message" style="display: none; margin-top: 1rem; color: #007bff;">
+        正在提交中，請稍候...
+    </div>
+</form>
+
+<script>
+    // 表單提交時顯示 loading 狀態
+    document.getElementById('survey-form').addEventListener('submit', function(e) {
+        // 如果表單無效（常見於 hidden 但仍 required 的欄位），瀏覽器會阻止送出
+        // 這裡避免把按鈕鎖死，並讓瀏覽器顯示驗證訊息
+        if (!this.checkValidity()) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.reportValidity();
+            return;
+        }
+
+        const submitBtn = document.getElementById('submit-btn');
+        const loadingMsg = document.getElementById('loading-message');
+        
+        submitBtn.disabled = true;
+        submitBtn.textContent = '提交中...';
+        loadingMsg.style.display = 'block';
+    });
+</script>
+{% endblock %}

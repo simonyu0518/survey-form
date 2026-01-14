@@ -102,6 +102,30 @@ python manage.py runserver
 
 ---
 
+## Repo 結構：兩個目錄分別代表什麼？
+
+這個 repo 是標準 Django 架構，主要會看到兩個 Python package 目錄：
+
+- **`survey_form/`（Django “project”）**：專案層級的設定與入口
+  - **`settings.py`**：全域設定（已把 `survey_app` 加進 `INSTALLED_APPS`）
+  - **`urls.py`**：總路由入口（目前只掛 `admin/` 與 `api/`）
+  - **`wsgi.py` / `asgi.py`**：部署入口（WSGI/ASGI）
+- **`survey_app/`（Django “app”）**：實際業務功能（問卷）都在這裡
+  - **`models.py`**：資料模型（Survey / Question / QuestionOrder / ConditionalOrder / Response…）
+  - **`views.py`**：API 實作（create survey/question、show form、submit response）
+  - **`urls.py`**：app 內的 API 路由（被 `survey_form/urls.py` 用 `include()` 掛到 `/api/`）
+  - **`admin.py`**：哪些 model 會出現在 Django Admin UI
+  - **`migrations/`**：資料庫 schema 版本（`python manage.py migrate` 會用到）
+
+快速判斷「要改什麼要看哪裡」：
+
+- **想改 API 路由**：先看 `survey_form/urls.py`（入口）→ 再看 `survey_app/urls.py`
+- **想改 API 行為**：看 `survey_app/views.py`
+- **想改 DB 欄位/表結構**：改 `survey_app/models.py` 後 `makemigrations` / `migrate`
+- **想改 Admin UI 看到的資料**：看 `survey_app/admin.py`
+
+---
+
 ## 4) 先建「必需資料」（不然部分 API 會直接噴錯）
 
 ### 必建 1：QuestionType

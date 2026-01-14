@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}錯誤 - Survey Form{% endblock %}
+{% block content %}
+<div style="padding: 2rem;">
+    <h1 style="color: #dc3545;">⚠ 發生錯誤</h1>
+    <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 1rem; margin: 1rem 0;">
+        <p style="margin: 0; font-weight: bold;">{{ error }}</p>
+    </div>
+    {% if details %}
+    <details style="margin: 1rem 0;">
+        <summary style="cursor: pointer; color: #666;">查看詳細錯誤資訊</summary>
+        <pre style="background-color: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto; margin-top: 0.5rem;">{{ details }}</pre>
+    </details>
+    {% endif %}
+    <div style="margin-top: 2rem;">
+        {% if survey %}
+        <a href="{% url 'survey_web:survey_form' survey.id %}" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-right: 1rem;">返回問卷</a>
+        {% endif %}
+        <a href="{% url 'survey_web:survey_list' %}" style="display: inline-block; padding: 0.75rem 1.5rem; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">返回首頁</a>
+    </div>
+</div>
+{% endblock %}
