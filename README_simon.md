@@ -126,6 +126,12 @@ python manage.py runserver
 
 ---
 
+## 補充文件：Q1/Q2/Q3 Demo 的資料模型 Mapping（推薦先看）
+
+- `docs/q1_q2_q3_mapping.md`
+
+---
+
 ## 4) 先建「必需資料」（不然部分 API 會直接噴錯）
 
 ### 必建 1：QuestionType
